@@ -39,6 +39,7 @@
 #include <rviz/display_group.h>
 #include <rviz/display.h>
 #include <rviz/render_panel.h>
+#include "ros/time.h"
 #include <QImage>
 #include <boost/filesystem.hpp>
 
@@ -150,17 +151,22 @@ namespace jsk_rviz_plugins
     int width = panel->width();
     int height = panel->height();
     writer_.open(file_name_, CV_FOURCC_DEFAULT, fps_, cv::Size(width, height));
+	writer2_.close();
+	writer2_.open((file_name_+".meta").c_str());
   }
   
   void VideoCaptureDisplay::stopCapture()
   {
     ROS_INFO("stop capturing");
     writer_.release();
+    writer2_.close();
     frame_counter_ = 0;
   }
 
   void VideoCaptureDisplay::update(float wall_dt, float ros_dt)
   {
+ 	struct timeval start;
+  gettimeofday(&start, NULL);
     if (first_time_) {
       ROS_WARN("force to disable capturing");
       start_capture_property_->setBool(false); // always false when starting up
@@ -175,6 +181,7 @@ namespace jsk_rviz_plugins
       cv::Mat image(src.height(), src.width(), CV_8UC3,
                     (uchar*)src.bits(), src.bytesPerLine());  // RGB
       cv::cvtColor(image, image, CV_RGB2BGR);  // RGB -> BGR
+      writer2_ << frame_counter_ << " " << ros::WallTime::now().toSec() << " " << (start.tv_sec * 1000 + start.tv_usec/1000.0) <<std::endl;
       writer_ << image;
       ++frame_counter_;
       if (frame_counter_ % 100 == 0) {

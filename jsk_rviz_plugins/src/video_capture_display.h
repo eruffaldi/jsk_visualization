@@ -42,7 +42,7 @@
 #include <rviz/properties/bool_property.h>
 #include <rviz/properties/float_property.h>
 #include <opencv2/opencv.hpp>
-
+#include <fstream>
 namespace jsk_rviz_plugins
 {
   class VideoCaptureDisplay: public rviz::Display
@@ -73,6 +73,7 @@ namespace jsk_rviz_plugins
     int frame_counter_;
     bool first_time_;
     cv::VideoWriter writer_;
+	std::ofstream writer2_;
   protected Q_SLOTS:
     void updateFileName();
     void updateStartCapture();
